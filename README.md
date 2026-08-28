@@ -111,6 +111,12 @@ O acesso a recursos sensíveis é sempre iniciado por uma ação clara da pessoa
 
 As ações de arquivo ficam protegidas por confirmação contextual: renomear exige confirmação no diálogo do navegador; mover só é oferecido depois que uma pasta foi autorizada; remover atua apenas sobre a lista da sessão e oferece desfazer. Navegadores sem suporte ao acesso seguro de pastas são informados sem bloquear a navegação, a busca ou a leitura da interface.
 
+## Hospedagem no Vercel
+
+O projeto é compatível com hospedagem estática no Vercel. Como as permissões pertencem ao navegador, elas são solicitadas apenas após uma ação explícita, como clicar em **Adicionar arquivos**, **Escolher pasta** ou **Permitir localização**. Em produção, o site deve ser servido por HTTPS para que os recursos de arquivos e geolocalização possam funcionar. O navegador pode bloquear o acesso se a pessoa negar a solicitação ou usar um ambiente sem suporte; nesse caso, a interface informa o estado sem impedir o uso das demais abas.
+
+O modo escuro pode ser ativado pelo ícone de lua no cabeçalho. A preferência fica salva no `localStorage` do navegador e pode ser alterada pelo mesmo controle, que muda para um ícone de sol.
+
 ## Autoria
 
 Concebido e desenvolvido por **Gabriel e Alício**.
