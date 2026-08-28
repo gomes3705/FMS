@@ -26,3 +26,10 @@
 - [x] Adicionar fallback de rotas para o aplicativo React.
 - [x] Atualizar o README com instruções corretas de deploy no Vercel.
 - [x] Validar build de produção e a saída publicada.
+
+## Correção do deploy visual
+
+- [x] Substituir referências de imagem que só funcionam no ambiente Manus.
+- [x] Garantir fallback visual caso uma imagem externa falhe.
+- [x] Remover o limite que cria espaço vazio em monitores largos.
+- [x] Validar a página com a largura aproximada do navegador do usuário.
