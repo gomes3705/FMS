@@ -33,3 +33,12 @@
 - [x] Garantir fallback visual caso uma imagem externa falhe.
 - [x] Remover o limite que cria espaço vazio em monitores largos.
 - [x] Validar a página com a largura aproximada do navegador do usuário.
+
+## Funcionalidades locais e leitura
+
+- [x] Tornar o seletor de espaço de trabalho funcional com troca local e criação de espaço.
+- [x] Tornar notificações funcionais com painel, leitura e limpeza local.
+- [x] Tornar o perfil funcional com edição de nome, plano local e menu de preferências.
+- [x] Persistir essas preferências apenas no navegador, sem banco.
+- [x] Aumentar textos, títulos e áreas clicáveis sem perder a composição.
+- [x] Validar as interações e o build final.
