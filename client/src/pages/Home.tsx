@@ -1,54 +1,13 @@
-/* Design: Arquivo Mineral — editorial modernism, charcoal/ivory base, clay-orange actions, asymmetric workspace, Space Grotesk + IBM Plex Sans. */
+/* Design: Arquivo Mineral — editorial workspace with explicit permissions, clear tabs and safe file actions. */
 import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
-  Archive,
-  ArrowDownToLine,
-  ArrowUpRight,
-  Bell,
-  BookOpen,
-  Check,
-  ChevronDown,
-  Clock3,
-  CloudUpload,
-  Command,
-  Copy,
-  FileArchive,
-  FileAudio,
-  FileCode2,
-  FileImage,
-  FileSpreadsheet,
-  FileText,
-  FileVideo,
-  FolderKanban,
-  FolderPlus,
-  Hash,
-  LayoutDashboard,
-  Library,
-  ListFilter,
-  MoreHorizontal,
-  Plus,
-  Search,
-  Settings2,
-  Sparkles,
-  Tag,
-  Trash2,
-  WandSparkles,
-  X,
+  Archive, ArrowDownToLine, ArrowLeft, ArrowUpRight, Bell, BookOpen, Check, ChevronDown, ChevronRight, Clock3, CloudUpload, Command, Copy, FileArchive, FileAudio, FileCode2, FileImage, FileSpreadsheet, FileText, FileVideo, FolderKanban, FolderOpen, FolderPlus, Info, LayoutDashboard, Library, ListFilter, LockKeyhole, MapPin, Menu, MoreHorizontal, Plus, Search, Settings2, ShieldCheck, Sparkles, Tag, Trash2, WandSparkles, X, RefreshCcw, ExternalLink
 } from "lucide-react";
 
-type FileItem = {
-  id: number;
-  name: string;
-  ext: string;
-  size: string;
-  modified: string;
-  collection: string;
-  color: string;
-  icon: "text" | "image" | "sheet" | "video" | "audio" | "code" | "archive";
-  tags: string[];
-  status: "Organizado" | "Revisar" | "Novo";
-};
+type IconKind = "text" | "image" | "sheet" | "video" | "audio" | "code" | "archive";
+type PermissionState = "pending" | "granted" | "denied" | "unsupported";
+type FileItem = { id: number; name: string; ext: string; size: string; modified: string; collection: string; color: string; icon: IconKind; tags: string[]; status: "Organizado" | "Revisar" | "Novo" };
 
 const initialFiles: FileItem[] = [
   { id: 1, name: "planejamento-q4.pdf", ext: "PDF", size: "2,4 MB", modified: "Hoje, 09:42", collection: "Trabalho", color: "coral", icon: "text", tags: ["planejamento", "2026"], status: "Organizado" },
@@ -58,36 +17,13 @@ const initialFiles: FileItem[] = [
   { id: 5, name: "briefing-podcast.docx", ext: "DOCX", size: "240 KB", modified: "12 jun, 11:20", collection: "Projetos pessoais", color: "coral", icon: "text", tags: ["conteúdo", "áudio"], status: "Revisar" },
   { id: 6, name: "backup-site-v3.tar.gz", ext: "TAR", size: "1,2 GB", modified: "11 jun, 22:48", collection: "Arquivo técnico", color: "slate", icon: "code", tags: ["backup", "web"], status: "Organizado" },
 ];
+const collections = [{ name: "Trabalho", count: 128, detail: "12 itens recentes", tone: "sand" }, { name: "Projetos pessoais", count: 74, detail: "8 itens recentes", tone: "coral" }, { name: "Arquivo pessoal", count: 52, detail: "3 itens recentes", tone: "sage" }, { name: "Finanças", count: 31, detail: "5 itens recentes", tone: "blue" }];
+const navItems = [{ label: "Visão geral", icon: LayoutDashboard }, { label: "Biblioteca", icon: Library }, { label: "Coleções", icon: FolderKanban }, { label: "Regras", icon: WandSparkles }, { label: "Atividade", icon: Clock3 }];
+const helpSteps = [{ n: "01", title: "Comece pelo seu arquivo", text: "Adicione arquivos ou escolha uma pasta. O navegador pedirá permissão antes de ler qualquer conteúdo." }, { n: "02", title: "Crie seu próprio contexto", text: "Use coleções e etiquetas que façam sentido para seu trabalho, seus projetos ou sua vida pessoal." }, { n: "03", title: "Revise sem pressa", text: "Itens novos ficam marcados para revisão. Você decide onde cada arquivo pertence antes de qualquer mudança." }, { n: "04", title: "Automatize o repetitivo", text: "Crie regras por nome, formato ou etiqueta. Nesta versão, as regras são sugestões visuais preparadas para automação." }];
 
-const navItems = [
-  { label: "Visão geral", icon: LayoutDashboard },
-  { label: "Biblioteca", icon: Library },
-  { label: "Coleções", icon: FolderKanban },
-  { label: "Regras", icon: WandSparkles },
-  { label: "Atividade", icon: Clock3 },
-];
-
-const collectionData = [
-  { name: "Trabalho", count: 128, detail: "12 itens recentes", tone: "sand" },
-  { name: "Projetos pessoais", count: 74, detail: "8 itens recentes", tone: "coral" },
-  { name: "Arquivo pessoal", count: 52, detail: "3 itens recentes", tone: "sage" },
-  { name: "Finanças", count: 31, detail: "5 itens recentes", tone: "blue" },
-];
-
-function FileIcon({ kind }: { kind: FileItem["icon"] }) {
-  const props = { size: 18, strokeWidth: 1.8 };
-  if (kind === "image") return <FileImage {...props} />;
-  if (kind === "sheet") return <FileSpreadsheet {...props} />;
-  if (kind === "video") return <FileVideo {...props} />;
-  if (kind === "audio") return <FileAudio {...props} />;
-  if (kind === "code") return <FileCode2 {...props} />;
-  if (kind === "archive") return <FileArchive {...props} />;
-  return <FileText {...props} />;
-}
-
-function AppMark() {
-  return <div className="app-mark" aria-label="Organizador"><span /><span /></div>;
-}
+function AppMark() { return <div className="app-mark" aria-label="Organizador"><span /><span /></div>; }
+function FileIcon({ kind }: { kind: IconKind }) { const p = { size: 18, strokeWidth: 1.8 }; if (kind === "image") return <FileImage {...p} />; if (kind === "sheet") return <FileSpreadsheet {...p} />; if (kind === "video") return <FileVideo {...p} />; if (kind === "audio") return <FileAudio {...p} />; if (kind === "code") return <FileCode2 {...p} />; if (kind === "archive") return <FileArchive {...p} />; return <FileText {...p} />; }
+function statusText(state: PermissionState) { return state === "granted" ? "Permitido" : state === "denied" ? "Bloqueado" : state === "unsupported" ? "Indisponível" : "Ainda não permitido"; }
 
 export default function Home() {
   const [activeNav, setActiveNav] = useState("Visão geral");
@@ -96,74 +32,53 @@ export default function Home() {
   const [filter, setFilter] = useState("Todos os tipos");
   const [showNew, setShowNew] = useState(false);
   const [newCollection, setNewCollection] = useState("");
+  const [selectedFile, setSelectedFile] = useState<FileItem | null>(null);
+  const [filePermission, setFilePermission] = useState<PermissionState>("pending");
+  const [locationPermission, setLocationPermission] = useState<PermissionState>("pending");
+  const [folderName, setFolderName] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const filteredFiles = useMemo(() => files.filter((file) => {
-    const matchesQuery = `${file.name} ${file.collection} ${file.tags.join(" ")}`.toLowerCase().includes(query.toLowerCase());
-    const matchesFilter = filter === "Todos os tipos" || file.ext === filter;
-    return matchesQuery && matchesFilter;
-  }), [files, query, filter]);
+  const filteredFiles = useMemo(() => files.filter((file) => `${file.name} ${file.collection} ${file.tags.join(" ")}`.toLowerCase().includes(query.toLowerCase()) && (filter === "Todos os tipos" || file.ext === filter)), [files, query, filter]);
+  const changeNav = (label: string) => { setActiveNav(label); setQuery(""); window.scrollTo({ top: 0, behavior: "smooth" }); };
+  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => { const selected = Array.from(event.target.files ?? []); if (!selected.length) return; const imported = selected.map((file, index): FileItem => ({ id: Date.now() + index, name: file.name, ext: file.name.split(".").pop()?.toUpperCase() || "FILE", size: `${Math.max(1, Math.round(file.size / 1024))} KB`, modified: "Agora", collection: "A revisar", color: "coral", icon: file.type.startsWith("image/") ? "image" : file.type.includes("sheet") ? "sheet" : file.type.includes("zip") ? "archive" : "text", tags: ["importado"], status: "Novo" })); setFiles((current) => [...imported, ...current]); setFilePermission("granted"); toast.success(`${selected.length} ${selected.length === 1 ? "arquivo importado" : "arquivos importados"}.`); event.target.value = ""; };
+  const chooseFolder = async () => { const picker = (window as unknown as { showDirectoryPicker?: () => Promise<{ name: string }> }).showDirectoryPicker; if (!picker) { setFilePermission("unsupported"); toast.error("Seu navegador não oferece acesso seguro a pastas."); return; } try { const handle = await picker(); setFolderName(handle.name); setFilePermission("granted"); toast.success(`Acesso concedido à pasta “${handle.name}”.`); } catch { setFilePermission("denied"); toast("Acesso à pasta não foi concedido."); } };
+  const askLocation = () => { if (!navigator.geolocation) { setLocationPermission("unsupported"); return; } navigator.geolocation.getCurrentPosition(() => { setLocationPermission("granted"); toast.success("Localização autorizada para esta sessão."); }, () => { setLocationPermission("denied"); toast.error("A localização não foi autorizada."); }); };
+  const createCollection = () => { if (!newCollection.trim()) return; toast.success(`Coleção “${newCollection.trim()}” criada.`); setNewCollection(""); setShowNew(false); };
+  const moveFile = (collection: string) => { if (!selectedFile) return; setFiles((current) => current.map((file) => file.id === selectedFile.id ? { ...file, collection, status: "Organizado" } : file)); toast.success(`Arquivo movido para “${collection}”.`); setSelectedFile(null); };
+  const renameFile = () => { if (!selectedFile) return; const next = window.prompt("Novo nome do arquivo", selectedFile.name); if (next?.trim()) { setFiles((current) => current.map((file) => file.id === selectedFile.id ? { ...file, name: next.trim(), modified: "Agora" } : file)); toast.success("Nome atualizado."); setSelectedFile(null); } };
+  const removeFile = (id: number) => { const removed = files.find((file) => file.id === id); setFiles((current) => current.filter((file) => file.id !== id)); toast("Arquivo removido da visualização.", { action: { label: "Desfazer", onClick: () => removed && setFiles((current) => [removed, ...current]) } }); };
 
-  function handleImport(event: React.ChangeEvent<HTMLInputElement>) {
-    const selected = Array.from(event.target.files ?? []);
-    if (!selected.length) return;
-    const imported = selected.map((file, index): FileItem => ({
-      id: Date.now() + index,
-      name: file.name,
-      ext: file.name.split(".").pop()?.toUpperCase() || "FILE",
-      size: `${Math.max(1, Math.round(file.size / 1024))} KB`,
-      modified: "Agora",
-      collection: "A revisar",
-      color: "coral",
-      icon: file.type.startsWith("image/") ? "image" : file.type.includes("sheet") ? "sheet" : file.type.includes("zip") ? "archive" : "text",
-      tags: ["importado"],
-      status: "Novo",
-    }));
-    setFiles((current) => [...imported, ...current]);
-    toast.success(`${selected.length} ${selected.length === 1 ? "arquivo importado" : "arquivos importados"}.`);
-    event.target.value = "";
-  }
-
-  function createCollection() {
-    if (!newCollection.trim()) return;
-    toast.success(`Coleção “${newCollection.trim()}” criada.`);
-    setNewCollection("");
-    setShowNew(false);
-  }
-
-  function removeFile(id: number) {
-    setFiles((current) => current.filter((file) => file.id !== id));
-    toast("Arquivo removido da visualização.", { action: { label: "Desfazer", onClick: () => setFiles(initialFiles) } });
-  }
-
-  return (
-    <div className="app-shell">
-      <aside className="sidebar">
-        <div className="brand-lockup"><AppMark /><div><strong>organizador</strong><span>arquivo pessoal</span></div></div>
-        <div className="workspace-switcher"><div className="workspace-avatar">G</div><div><span>Espaço de trabalho</span><strong>Meu arquivo</strong></div><ChevronDown size={15} /></div>
-        <nav className="primary-nav" aria-label="Navegação principal">
-          <p className="nav-kicker">Navegar</p>
-          {navItems.map(({ label, icon: Icon }) => <button key={label} className={activeNav === label ? "nav-item active" : "nav-item"} onClick={() => setActiveNav(label)}><Icon size={18} /><span>{label}</span>{label === "Atividade" && <b>3</b>}</button>)}
-        </nav>
-        <div className="sidebar-collections"><div className="nav-kicker-row"><p className="nav-kicker">Coleções fixadas</p><button onClick={() => setShowNew(true)} aria-label="Criar coleção"><Plus size={15} /></button></div>{collectionData.slice(0, 4).map((collection) => <button className="mini-collection" key={collection.name} onClick={() => { setActiveNav("Biblioteca"); setQuery(collection.name); }}><span className={`collection-dot ${collection.tone}`} />{collection.name}<small>{collection.count}</small></button>)}</div>
-        <div className="sidebar-bottom"><button className="nav-item"><Settings2 size={18} /><span>Preferências</span></button><div className="storage-card"><div className="storage-top"><span>Espaço local</span><strong>62%</strong></div><div className="storage-track"><span /></div><p>31,2 GB de 50 GB usados</p></div><div className="profile"><div className="profile-avatar">G</div><div><strong>Gabriel</strong><span>Plano pessoal</span></div><MoreHorizontal size={17} /></div></div>
-      </aside>
-
-      <main className="main-content">
-        <header className="topbar"><div className="breadcrumb"><span>Meu arquivo</span><span>/</span><strong>{activeNav}</strong></div><div className="top-actions"><button className="command-search" onClick={() => inputRef.current?.focus()}><Search size={16} /><span>Buscar no arquivo...</span><kbd><Command size={12} /> K</kbd></button><button className="icon-button" aria-label="Notificações"><Bell size={18} /><i /></button><button className="top-avatar">G</button></div></header>
-        <div className="coordinate-line"><span>COORD. 04—26</span><span>ATUALIZADO AGORA</span></div>
-
-        <section className="hero-intro"><div><p className="eyebrow"><span className="eyebrow-mark" /> Seu espaço, do seu jeito</p><h1>Encontre espaço<br /><em>para o que importa.</em></h1><p className="hero-copy">Um lugar flexível para reunir, organizar e retomar seus arquivos — sem importar de onde eles vieram.</p><div className="hero-actions"><button className="button-primary" onClick={() => inputRef.current?.click()}><CloudUpload size={17} /> Adicionar arquivos <span>↗</span></button><button className="button-quiet" onClick={() => setShowNew(true)}><FolderPlus size={17} /> Criar coleção</button></div></div><div className="hero-art"><img src="/manus-storage/organizador-hero_b2abbc97.png" alt="Pastas e etiquetas sobre uma mesa de arquivo" /><div className="art-stamp">ORGANIZE<br /><strong>SEM<br />LIMITES</strong></div></div></section>
-
-        <section className="stats-row"><div className="stat-card featured"><span className="stat-label">Arquivos no espaço</span><strong>285</strong><span className="stat-meta"><ArrowUpRight size={14} /> 18 adicionados este mês</span></div><div className="stat-card"><span className="stat-label">Coleções ativas</span><strong>08</strong><span className="stat-meta muted"><FolderKanban size={14} /> 4 fixadas na barra</span></div><div className="stat-card"><span className="stat-label">Precisam de atenção</span><strong>12</strong><span className="stat-meta warning"><Sparkles size={14} /> Sugestões de organização</span></div><div className="stat-card stat-quote"><span className="quote-mark">“</span><p>Organização é transformar procura em encontro.</p><span>— nota do seu arquivo</span></div></section>
-
-        <section className="workspace-section"><div className="section-heading"><div><p className="eyebrow">Biblioteca viva</p><h2>Arquivos recentes</h2></div><button className="text-link" onClick={() => setActiveNav("Biblioteca")}>Ver biblioteca completa <ArrowUpRight size={15} /></button></div><div className="library-toolbar"><div className="search-field"><Search size={17} /><input ref={inputRef} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar por nome, etiqueta ou coleção" /><kbd>/</kbd></div><div className="filter-wrap"><ListFilter size={16} /><select value={filter} onChange={(event) => setFilter(event.target.value)} aria-label="Filtrar por tipo"><option>Todos os tipos</option><option>PDF</option><option>DOCX</option><option>XLSX</option><option>JPG</option><option>ZIP</option><option>TAR</option></select></div><button className="view-toggle active"><Library size={16} /></button><button className="view-toggle"><ListFilter size={16} /></button></div><div className="file-table"><div className="file-table-head"><span>Arquivo</span><span>Coleção</span><span>Última alteração</span><span>Status</span><span /></div>{filteredFiles.slice(0, 6).map((file) => <div className="file-row" key={file.id}><div className="file-name"><span className={`file-icon ${file.color}`}><FileIcon kind={file.icon} /></span><div><strong>{file.name}</strong><span>{file.ext} · {file.size}</span></div></div><div className="file-collection"><span className={`collection-dot ${file.color}`} />{file.collection}</div><div className="file-date">{file.modified}</div><div><span className={`status-pill ${file.status === "Novo" ? "new" : file.status === "Revisar" ? "review" : "done"}`}>{file.status === "Organizado" && <Check size={12} />}{file.status}</span></div><button className="row-action" onClick={() => removeFile(file.id)} aria-label={`Remover ${file.name}`}><MoreHorizontal size={18} /></button></div>)}{filteredFiles.length === 0 && <div className="empty-state"><Archive size={24} /><strong>Nenhum arquivo encontrado</strong><span>Tente outra busca ou importe um novo arquivo.</span></div>}</div></section>
-
-        <section className="lower-grid"><div className="collections-panel"><div className="section-heading compact"><div><p className="eyebrow">Pontos de partida</p><h2>Suas coleções</h2></div><button className="circle-button" onClick={() => setShowNew(true)} aria-label="Nova coleção"><Plus size={17} /></button></div><div className="collection-grid">{collectionData.map((collection) => <button className="collection-card" key={collection.name} onClick={() => { setQuery(collection.name); setActiveNav("Biblioteca"); }}><div className={`collection-illustration ${collection.tone}`}><span /><span /><span /></div><div className="collection-info"><strong>{collection.name}</strong><span>{collection.detail}</span></div><b>{collection.count}</b></button>)}</div></div><div className="attention-panel"><div className="section-heading compact"><div><p className="eyebrow">Próxima ação</p><h2>Para revisar</h2></div><span className="attention-count">03</span></div><div className="attention-card"><div className="attention-icon"><WandSparkles size={18} /></div><div><strong>Você tem arquivos sem coleção</strong><p>3 itens importados aguardam uma decisão.</p><button onClick={() => { setQuery("importado"); setActiveNav("Biblioteca"); }}>Revisar agora <ArrowUpRight size={14} /></button></div></div><div className="rule-suggestion"><div className="rule-icon"><Tag size={16} /></div><div><strong>Crie uma regra inteligente</strong><p>“Arquivos com backup” → Arquivo técnico</p></div><button onClick={() => setActiveNav("Regras")}><ArrowUpRight size={15} /></button></div></div></section>
-      </main>
-
-      <input ref={inputRef} type="file" multiple hidden onChange={handleImport} />
-      {showNew && <div className="modal-backdrop" onClick={() => setShowNew(false)}><div className="new-modal" onClick={(event) => event.stopPropagation()}><button className="modal-close" onClick={() => setShowNew(false)}><X size={18} /></button><div className="modal-icon"><FolderPlus size={21} /></div><p className="eyebrow">Nova estrutura</p><h2>Crie uma coleção</h2><p className="modal-copy">Dê um nome que faça sentido para o seu fluxo. Você poderá mover arquivos para cá quando quiser.</p><label>Nome da coleção<input autoFocus value={newCollection} onChange={(event) => setNewCollection(event.target.value)} onKeyDown={(event) => event.key === "Enter" && createCollection()} placeholder="Ex.: Inspirações, Documentos, Viagens..." /></label><div className="modal-actions"><button className="button-quiet" onClick={() => setShowNew(false)}>Cancelar</button><button className="button-primary" onClick={createCollection}>Criar coleção <ArrowUpRight size={16} /></button></div></div></div>}
-    </div>
-  );
+  return <div className="app-shell">
+    <aside className="sidebar"><div className="brand-lockup"><AppMark /><div><strong>organizador</strong><span>arquivo pessoal</span></div></div><div className="workspace-switcher"><div className="workspace-avatar">G</div><div><span>Espaço de trabalho</span><strong>Meu arquivo</strong></div><ChevronDown size={15} /></div><nav className="primary-nav" aria-label="Navegação principal"><p className="nav-kicker">Navegar</p>{navItems.map(({ label, icon: Icon }) => <button key={label} className={activeNav === label ? "nav-item active" : "nav-item"} onClick={() => changeNav(label)}><Icon size={18} /><span>{label}</span>{label === "Atividade" && <b>3</b>}</button>)}<button className={activeNav === "Como usar" ? "nav-item active" : "nav-item"} onClick={() => changeNav("Como usar")}><BookOpen size={18} /><span>Como usar</span></button></nav><div className="sidebar-collections"><div className="nav-kicker-row"><p className="nav-kicker">Coleções fixadas</p><button onClick={() => setShowNew(true)} aria-label="Criar coleção"><Plus size={15} /></button></div>{collections.map((collection) => <button className="mini-collection" key={collection.name} onClick={() => { setActiveNav("Biblioteca"); setQuery(collection.name); }}><span className={`collection-dot ${collection.tone}`} />{collection.name}<small>{collection.count}</small></button>)}</div><div className="sidebar-bottom"><button className={activeNav === "Preferências" ? "nav-item active" : "nav-item"} onClick={() => changeNav("Preferências")}><Settings2 size={18} /><span>Preferências</span></button><div className="storage-card"><div className="storage-top"><span>Espaço local</span><strong>62%</strong></div><div className="storage-track"><span /></div><p>31,2 GB de 50 GB usados</p></div><div className="profile"><div className="profile-avatar">G</div><div><strong>Gabriel</strong><span>Plano pessoal</span></div><MoreHorizontal size={17} /></div></div></aside>
+    <main className="main-content"><header className="topbar"><div className="breadcrumb"><span>Meu arquivo</span><span>/</span><strong>{activeNav}</strong></div><div className="top-actions"><button className="command-search" onClick={() => inputRef.current?.focus()}><Search size={16} /><span>Buscar no arquivo...</span><kbd><Command size={12} /> K</kbd></button><button className="icon-button" aria-label="Notificações"><Bell size={18} /><i /></button><button className="top-avatar">G</button></div></header><div className="coordinate-line"><span>COORD. 04—26</span><span>ATUALIZADO AGORA</span></div><div className="workspace-tabs" role="tablist" aria-label="Seções do organizador">{[...navItems.map((item) => item.label), "Como usar", "Preferências"].map((label) => <button key={label} role="tab" aria-selected={activeNav === label} className={activeNav === label ? "workspace-tab active" : "workspace-tab"} onClick={() => changeNav(label)}>{label}</button>)}</div>
+      {activeNav === "Visão geral" && <Overview onImport={() => inputRef.current?.click()} onNew={() => setShowNew(true)} onNavigate={changeNav} files={files} filteredFiles={filteredFiles} query={query} setQuery={setQuery} filter={filter} setFilter={setFilter} setSelectedFile={setSelectedFile} removeFile={removeFile} />}
+      {activeNav === "Biblioteca" && <LibraryView files={filteredFiles} query={query} setQuery={setQuery} filter={filter} setFilter={setFilter} setSelectedFile={setSelectedFile} removeFile={removeFile} onImport={() => inputRef.current?.click()} />}
+      {activeNav === "Coleções" && <CollectionsView onNew={() => setShowNew(true)} onNavigate={changeNav} />}
+      {activeNav === "Regras" && <RulesView />}
+      {activeNav === "Atividade" && <ActivityView />}
+      {activeNav === "Como usar" && <HowToView onImport={() => inputRef.current?.click()} onPermission={() => changeNav("Preferências")} />}
+      {activeNav === "Preferências" && <PreferencesView filePermission={filePermission} locationPermission={locationPermission} folderName={folderName} chooseFolder={chooseFolder} askLocation={askLocation} />}
+    </main>
+    <input ref={inputRef} type="file" multiple hidden onChange={handleImport} />
+    {selectedFile && <div className="modal-backdrop" onClick={() => setSelectedFile(null)}><div className="file-modal" onClick={(event) => event.stopPropagation()}><button className="modal-close" onClick={() => setSelectedFile(null)}><X size={18} /></button><span className={`file-icon ${selectedFile.color}`}><FileIcon kind={selectedFile.icon} /></span><p className="eyebrow">Ação segura</p><h2>{selectedFile.name}</h2><p className="modal-copy">Escolha uma operação. A movimentação só acontece depois que você concede acesso à pasta e confirma o destino.</p><div className="modal-action-list"><button onClick={renameFile}><Copy size={16} /> Renomear arquivo <ChevronRight size={15} /></button>{collections.map((collection) => <button key={collection.name} onClick={() => filePermission === "granted" ? moveFile(collection.name) : toast.error("Conceda acesso a uma pasta antes de mover arquivos.")}><FolderOpen size={16} /> Mover para {collection.name} <ChevronRight size={15} /></button>)}<button className="danger-action" onClick={() => { removeFile(selectedFile.id); setSelectedFile(null); }}><Trash2 size={16} /> Remover da lista <ChevronRight size={15} /></button></div></div></div>}
+    {showNew && <div className="modal-backdrop" onClick={() => setShowNew(false)}><div className="new-modal" onClick={(event) => event.stopPropagation()}><button className="modal-close" onClick={() => setShowNew(false)}><X size={18} /></button><div className="modal-icon"><FolderPlus size={21} /></div><p className="eyebrow">Nova estrutura</p><h2>Crie uma coleção</h2><p className="modal-copy">Dê um nome que faça sentido para seu fluxo. Você poderá mover arquivos para cá quando quiser.</p><label>Nome da coleção<input autoFocus value={newCollection} onChange={(event) => setNewCollection(event.target.value)} onKeyDown={(event) => event.key === "Enter" && createCollection()} placeholder="Ex.: Inspirações, Documentos, Viagens..." /></label><div className="modal-actions"><button className="button-quiet" onClick={() => setShowNew(false)}>Cancelar</button><button className="button-primary" onClick={createCollection}>Criar coleção <ArrowUpRight size={16} /></button></div></div></div>}
+    <footer className="site-credit">Feito com cuidado por <strong>Gabriel e Alício</strong></footer>
+  </div>;
 }
+
+function Overview({ onImport, onNew, onNavigate, files, filteredFiles, query, setQuery, filter, setFilter, setSelectedFile, removeFile }: { onImport: () => void; onNew: () => void; onNavigate: (label: string) => void; files: FileItem[]; filteredFiles: FileItem[]; query: string; setQuery: (v: string) => void; filter: string; setFilter: (v: string) => void; setSelectedFile: (v: FileItem | null) => void; removeFile: (id: number) => void }) { return <><section className="hero-intro"><div><p className="eyebrow"><span className="eyebrow-mark" /> Seu espaço, do seu jeito</p><h1>Encontre espaço<br /><em>para o que importa.</em></h1><p className="hero-copy">Um lugar flexível para reunir, organizar e retomar seus arquivos — sem importar de onde eles vieram.</p><div className="hero-actions"><button className="button-primary" onClick={onImport}><CloudUpload size={17} /> Adicionar arquivos <span>↗</span></button><button className="button-quiet" onClick={onNew}><FolderPlus size={17} /> Criar coleção</button></div></div><div className="hero-art"><img src="/manus-storage/organizador-hero_b2abbc97.png" alt="Pastas e etiquetas sobre uma mesa de arquivo" /><div className="art-stamp">ORGANIZE<br /><strong>SEM<br />LIMITES</strong></div></div></section><section className="stats-row"><div className="stat-card featured"><span className="stat-label">Arquivos no espaço</span><strong>{285 + Math.max(0, files.length - 6)}</strong><span className="stat-meta"><ArrowUpRight size={14} /> 18 adicionados este mês</span></div><div className="stat-card"><span className="stat-label">Coleções ativas</span><strong>08</strong><span className="stat-meta muted"><FolderKanban size={14} /> 4 fixadas na barra</span></div><div className="stat-card"><span className="stat-label">Precisam de atenção</span><strong>12</strong><span className="stat-meta warning"><Sparkles size={14} /> Sugestões de organização</span></div><div className="stat-card stat-quote"><span className="quote-mark">“</span><p>Organização é transformar procura em encontro.</p><span>— nota do seu arquivo</span></div></section><LibrarySection filteredFiles={filteredFiles} query={query} setQuery={setQuery} filter={filter} setFilter={setFilter} setSelectedFile={setSelectedFile} removeFile={removeFile} onFull={() => onNavigate("Biblioteca")} /><section className="lower-grid"><CollectionsView onNew={onNew} onNavigate={onNavigate} /><div className="attention-panel"><div className="section-heading compact"><div><p className="eyebrow">Próxima ação</p><h2>Para revisar</h2></div><span className="attention-count">03</span></div><div className="attention-card"><div className="attention-icon"><WandSparkles size={18} /></div><div><strong>Você tem arquivos sem coleção</strong><p>3 itens importados aguardam uma decisão.</p><button onClick={() => { setQuery("importado"); onNavigate("Biblioteca"); }}>Revisar agora <ArrowUpRight size={14} /></button></div></div><div className="rule-suggestion"><div className="rule-icon"><Tag size={16} /></div><div><strong>Crie uma regra inteligente</strong><p>“Arquivos com backup” → Arquivo técnico</p></div><button onClick={() => onNavigate("Regras")}><ArrowUpRight size={15} /></button></div></div></section></>; }
+
+function LibrarySection({ filteredFiles, query, setQuery, filter, setFilter, setSelectedFile, removeFile, onFull }: { filteredFiles: FileItem[]; query: string; setQuery: (v: string) => void; filter: string; setFilter: (v: string) => void; setSelectedFile: (v: FileItem | null) => void; removeFile: (id: number) => void; onFull: () => void }) { return <section className="workspace-section"><div className="section-heading"><div><p className="eyebrow">Biblioteca viva</p><h2>Arquivos recentes</h2></div><button className="text-link" onClick={onFull}>Ver biblioteca completa <ArrowUpRight size={15} /></button></div><div className="library-toolbar"><SearchField query={query} setQuery={setQuery} /><Filter filter={filter} setFilter={setFilter} /><button className="view-toggle active"><Library size={16} /></button><button className="view-toggle"><ListFilter size={16} /></button></div><FileTable files={filteredFiles.slice(0, 6)} setSelectedFile={setSelectedFile} removeFile={removeFile} /></section>; }
+function SearchField({ query, setQuery }: { query: string; setQuery: (v: string) => void }) { return <div className="search-field"><Search size={17} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar por nome, etiqueta ou coleção" /><kbd>/</kbd></div>; }
+function Filter({ filter, setFilter }: { filter: string; setFilter: (v: string) => void }) { return <div className="filter-wrap"><ListFilter size={16} /><select value={filter} onChange={(event) => setFilter(event.target.value)} aria-label="Filtrar por tipo"><option>Todos os tipos</option><option>PDF</option><option>DOCX</option><option>XLSX</option><option>JPG</option><option>ZIP</option><option>TAR</option></select></div>; }
+function FileTable({ files, setSelectedFile, removeFile }: { files: FileItem[]; setSelectedFile: (v: FileItem | null) => void; removeFile: (id: number) => void }) { return <div className="file-table"><div className="file-table-head"><span>Arquivo</span><span>Coleção</span><span>Última alteração</span><span>Status</span><span /></div>{files.map((file) => <div className="file-row" key={file.id}><button className="file-name" onClick={() => setSelectedFile(file)}><span className={`file-icon ${file.color}`}><FileIcon kind={file.icon} /></span><span><strong>{file.name}</strong><em>{file.ext} · {file.size}</em></span></button><div className="file-collection"><span className={`collection-dot ${file.color}`} />{file.collection}</div><div className="file-date">{file.modified}</div><div><span className={`status-pill ${file.status === "Novo" ? "new" : file.status === "Revisar" ? "review" : "done"}`}>{file.status === "Organizado" && <Check size={12} />}{file.status}</span></div><button className="row-action" onClick={() => setSelectedFile(file)} aria-label={`Abrir ações para ${file.name}`}><MoreHorizontal size={18} /></button></div>)}{files.length === 0 && <div className="empty-state"><Archive size={24} /><strong>Nenhum arquivo encontrado</strong><span>Tente outra busca ou importe um novo arquivo.</span></div>}</div>; }
+
+function LibraryView({ files, query, setQuery, filter, setFilter, setSelectedFile, removeFile, onImport }: { files: FileItem[]; query: string; setQuery: (v: string) => void; filter: string; setFilter: (v: string) => void; setSelectedFile: (v: FileItem | null) => void; removeFile: (id: number) => void; onImport: () => void }) { return <section className="page-section"><PageTitle eyebrow="Tudo no lugar" title="Biblioteca" description="Pesquise, filtre e escolha o próximo destino de cada arquivo." action={<button className="button-primary" onClick={onImport}><CloudUpload size={17} /> Adicionar arquivos</button>} /><div className="library-toolbar large"><SearchField query={query} setQuery={setQuery} /><Filter filter={filter} setFilter={setFilter} /></div><FileTable files={files} setSelectedFile={setSelectedFile} removeFile={removeFile} /></section>; }
+function CollectionsView({ onNew, onNavigate }: { onNew: () => void; onNavigate: (v: string) => void }) { return <section className="page-section"><PageTitle eyebrow="Pontos de partida" title="Coleções" description="Agrupe arquivos pelo contexto que ajuda você a encontrá-los novamente." action={<button className="button-primary" onClick={onNew}><FolderPlus size={17} /> Nova coleção</button>} /><div className="collection-grid large-collections">{collections.map((collection) => <button className="collection-card" key={collection.name} onClick={() => { onNavigate("Biblioteca"); }}><div className={`collection-illustration ${collection.tone}`}><span /><span /><span /></div><div className="collection-info"><strong>{collection.name}</strong><span>{collection.detail}</span></div><b>{collection.count}</b></button>)}<button className="collection-card create-card" onClick={onNew}><div className="collection-illustration empty-illustration"><Plus size={21} /></div><div className="collection-info"><strong>Nova coleção</strong><span>Comece do zero</span></div></button></div></section>; }
+function RulesView() { return <section className="page-section"><PageTitle eyebrow="Classificação assistida" title="Regras" description="Deixe o Organizador sugerir destinos com base no jeito como seus arquivos chegam." action={<button className="button-primary" onClick={() => toast.success("Editor de regras em preparação.")}><Plus size={17} /> Criar regra</button>} /><div className="rule-list"><div className="rule-card"><div className="rule-number">01</div><div><strong>Arquivos com “backup”</strong><p>Nome contém <b>backup</b> → mover para <b>Arquivo técnico</b></p></div><span className="status-pill done"><Check size={12} /> Ativa</span><button><MoreHorizontal size={18} /></button></div><div className="rule-card"><div className="rule-number">02</div><div><strong>Documentos de planejamento</strong><p>Extensão <b>PDF ou DOCX</b> + etiqueta <b>planejamento</b> → <b>Trabalho</b></p></div><span className="status-pill review">Rascunho</span><button><MoreHorizontal size={18} /></button></div></div><div className="info-banner"><Info size={18} /><div><strong>Como as regras funcionam</strong><p>Elas são avaliadas de cima para baixo. Antes de mover qualquer coisa, o Organizador mostra uma prévia para você confirmar.</p></div></div></section>; }
+function ActivityView() { return <section className="page-section"><PageTitle eyebrow="Linha do tempo" title="Atividade" description="Um registro simples do que mudou no seu arquivo." /><div className="activity-list"><Activity time="Agora" title="3 arquivos aguardando revisão" text="Vieram de uma importação recente." icon={<Sparkles size={16} />} tone="coral" /><Activity time="Hoje, 09:42" title="planejamento-q4.pdf foi organizado" text="Coleção Trabalho · regra manual" icon={<Check size={16} />} tone="sage" /><Activity time="Ontem, 17:30" title="Nova coleção Finanças criada" text="31 arquivos relacionados" icon={<FolderPlus size={16} />} tone="blue" /></div></section>; }
+function Activity({ time, title, text, icon, tone }: { time: string; title: string; text: string; icon: React.ReactNode; tone: string }) { return <div className="activity-item"><div className={`activity-icon ${tone}`}>{icon}</div><div><span>{time}</span><strong>{title}</strong><p>{text}</p></div></div>; }
+function HowToView({ onImport, onPermission }: { onImport: () => void; onPermission: () => void }) { return <section className="page-section howto-page"><PageTitle eyebrow="Um arquivo que acompanha você" title="Como usar" description="Você decide a estrutura. O Organizador cuida da clareza." /><div className="howto-intro"><div><span className="howto-index">GUIA 01 / 04</span><h2>Organize sem transformar sua rotina em burocracia.</h2><p>O Organizador foi feito para qualquer tipo de arquivo e qualquer tipo de pessoa. Comece pequeno, crie contexto aos poucos e mantenha o controle sobre cada mudança.</p><div className="hero-actions"><button className="button-primary" onClick={onImport}><CloudUpload size={17} /> Adicionar meu primeiro arquivo</button><button className="button-quiet" onClick={onPermission}><LockKeyhole size={16} /> Ver permissões</button></div></div><img src="/manus-storage/organizador-library_a0f07227.png" alt="Materiais variados organizados em uma biblioteca" /></div><div className="steps-grid">{helpSteps.map((step) => <div className="help-step" key={step.n}><span>{step.n}</span><h3>{step.title}</h3><p>{step.text}</p></div>)}</div><div className="privacy-note"><ShieldCheck size={18} /><div><strong>Permissões sempre explícitas</strong><p>Nada é lido, localizado ou movido sem uma ação sua. O navegador exibe o pedido de permissão no momento em que ele é necessário.</p></div></div></section>; }
+function PreferencesView({ filePermission, locationPermission, folderName, chooseFolder, askLocation }: { filePermission: PermissionState; locationPermission: PermissionState; folderName: string; chooseFolder: () => void; askLocation: () => void }) { return <section className="page-section"><PageTitle eyebrow="Controle do espaço" title="Preferências" description="Escolha quais recursos o Organizador pode usar e revogue quando quiser." /><div className="permission-list"><PermissionCard icon={<FolderOpen size={20} />} title="Arquivos e pastas" description={folderName ? `Pasta conectada: ${folderName}` : "Permite escolher uma pasta, importar arquivos e confirmar movimentações."} state={filePermission} action={chooseFolder} actionLabel="Escolher pasta" /><PermissionCard icon={<MapPin size={20} />} title="Localização" description="Usada apenas se você quiser registrar a origem geográfica de uma coleção ou atividade." state={locationPermission} action={askLocation} actionLabel="Permitir localização" /><PermissionCard icon={<Bell size={20} />} title="Notificações" description="Avisos sobre arquivos novos e itens que aguardam sua revisão." state="pending" action={() => toast.success("As notificações serão configuradas quando você ativar esse recurso.")} actionLabel="Configurar depois" /></div><div className="permission-footnote"><LockKeyhole size={16} /><span>O acesso a arquivos depende de um navegador compatível e de uma conexão segura (HTTPS ou localhost). Bloquear uma permissão não impede o restante do aplicativo de funcionar.</span></div></section>; }
+function PermissionCard({ icon, title, description, state, action, actionLabel }: { icon: React.ReactNode; title: string; description: string; state: PermissionState; action: () => void; actionLabel: string }) { return <div className="permission-card"><div className="permission-icon">{icon}</div><div className="permission-copy"><div><strong>{title}</strong><span className={`permission-status ${state}`}>{state === "granted" && <Check size={12} />}{statusText(state)}</span></div><p>{description}</p></div><button className="button-quiet permission-button" onClick={action}>{state === "granted" ? <RefreshCcw size={15} /> : <ArrowUpRight size={15} />}{state === "granted" ? "Alterar acesso" : actionLabel}</button></div>; }
+function PageTitle({ eyebrow, title, description, action }: { eyebrow: string; title: string; description: string; action?: React.ReactNode }) { return <div className="page-title"><div><p className="eyebrow">{eyebrow}</p><h1>{title}</h1><p>{description}</p></div>{action}</div>; }

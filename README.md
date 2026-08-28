@@ -103,6 +103,18 @@ Na visão geral, use **Adicionar arquivos** para selecionar um ou mais arquivos 
 
 A busca aceita termos do nome do arquivo, do nome da coleção e das etiquetas. O seletor de formato restringe a lista aos formatos disponíveis. Os itens com status “Revisar” representam materiais que chegaram ao arquivo, mas ainda aguardam uma decisão de classificação.
 
+## Navegação e permissões
+
+A aplicação agora usa uma navegação por abas explícita, sincronizada com a barra lateral. As seções **Visão geral**, **Biblioteca**, **Coleções**, **Regras**, **Atividade**, **Como usar** e **Preferências** alteram o conteúdo sem recarregar a página.
+
+O acesso a recursos sensíveis é sempre iniciado por uma ação clara da pessoa. Em **Preferências**, “Arquivos e pastas” chama o seletor seguro de diretórios do navegador quando disponível, enquanto “Localização” chama a permissão de geolocalização nativa. A importação de arquivos usa o seletor do sistema operacional. O produto não tenta obter esses acessos silenciosamente.
+
+As ações de arquivo ficam protegidas por confirmação contextual: renomear exige confirmação no diálogo do navegador; mover só é oferecido depois que uma pasta foi autorizada; remover atua apenas sobre a lista da sessão e oferece desfazer. Navegadores sem suporte ao acesso seguro de pastas são informados sem bloquear a navegação, a busca ou a leitura da interface.
+
+## Autoria
+
+Concebido e desenvolvido por **Gabriel e Alício**.
+
 ## Roadmap recomendado
 
 ### Próxima camada: organização real
