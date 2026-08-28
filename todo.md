@@ -18,3 +18,11 @@
 - [x] Ajustar o fluxo de permissões para solicitar somente após ação clara, funcionando em HTTPS no Vercel.
 - [x] Atualizar a documentação com notas de hospedagem estática e permissões do navegador.
 - [x] Testar tema claro/escuro, coleções, desktop, mobile e build de produção.
+
+## Deploy no Vercel
+
+- [x] Inspecionar scripts de build e a configuração atual do Vercel.
+- [x] Publicar apenas o diretório estático gerado pelo Vite.
+- [x] Adicionar fallback de rotas para o aplicativo React.
+- [x] Atualizar o README com instruções corretas de deploy no Vercel.
+- [x] Validar build de produção e a saída publicada.

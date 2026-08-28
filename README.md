@@ -113,7 +113,9 @@ As ações de arquivo ficam protegidas por confirmação contextual: renomear ex
 
 ## Hospedagem no Vercel
 
-O projeto é compatível com hospedagem estática no Vercel. Como as permissões pertencem ao navegador, elas são solicitadas apenas após uma ação explícita, como clicar em **Adicionar arquivos**, **Escolher pasta** ou **Permitir localização**. Em produção, o site deve ser servido por HTTPS para que os recursos de arquivos e geolocalização possam funcionar. O navegador pode bloquear o acesso se a pessoa negar a solicitação ou usar um ambiente sem suporte; nesse caso, a interface informa o estado sem impedir o uso das demais abas.
+O projeto é compatível com hospedagem estática no Vercel. O arquivo `vercel.json` define `pnpm build:vercel` como comando de build, publica `dist/public` e redireciona as rotas do React para `index.html`. Como as permissões pertencem ao navegador, elas são solicitadas apenas após uma ação explícita, como clicar em **Adicionar arquivos**, **Escolher pasta** ou **Permitir localização**. Em produção, o site deve ser servido por HTTPS para que os recursos de arquivos e geolocalização possam funcionar. O navegador pode bloquear o acesso se a pessoa negar a solicitação ou usar um ambiente sem suporte; nesse caso, a interface informa o estado sem impedir o uso das demais abas.
+
+O arquivo `server/index.ts` pertence ao servidor Express do template e não é necessário para o deploy estático. No Vercel, não use `pnpm build` como comando personalizado; deixe o projeto usar a configuração de `vercel.json` ou informe `pnpm build:vercel`.
 
 O modo escuro pode ser ativado pelo ícone de lua no cabeçalho. A preferência fica salva no `localStorage` do navegador e pode ser alterada pelo mesmo controle, que muda para um ícone de sol.
 
